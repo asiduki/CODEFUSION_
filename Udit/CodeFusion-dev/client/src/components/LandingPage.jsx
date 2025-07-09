@@ -1,168 +1,162 @@
 import React from "react";
-import styles from "./LandingPage.module.css";
 import { Link } from "react-router-dom";
-
-// Example path (adjust as needed)
 
 function LandingPage() {
   return (
-    <div>
-      <header>
-        <nav className={styles.container}>
-          <div className="flex items-center justify-start ">
-            <img src="/logo.png" alt="CodeFusion Logo" className="size-8" />
-            <span className="text-4xl bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent font-bold">
+    <div className="min-h-screen w-full bg-white text-gray-800">
+      {/* Navbar */}
+      <header className="shadow-md sticky top-0 z-50 bg-white">
+        <nav className="max-w-7xl mx-auto flex justify-between items-center p-4">
+          <div className="flex items-center space-x-2">
+            <img src="/logo.png" alt="CodeFusion Logo" className="w-8 h-8" />
+            <span className="text-3xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
               CodeFusion
             </span>
           </div>
-          <ul>
-            <li>
-              <a href="#home">Home</a>
-            </li>
-            <li>
-              <a href="#features">Features</a>
-            </li>
-            <li>
-              <a href="#">Docs</a>
-            </li>
-            <li>
-              <a href="#contact">Contact</a>
-            </li>
+          <ul className="hidden md:flex space-x-6 text-lg font-medium">
+            <li><a href="#home" className="hover:text-blue-600">Home</a></li>
+            <li><a href="#features" className="hover:text-blue-600">Features</a></li>
+            <li><a href="#" className="hover:text-blue-600">Docs</a></li>
+            <li><a href="#contact" className="hover:text-blue-600">Contact</a></li>
           </ul>
-          <Link to={"/login"}>
-            <button className={styles.loginBtn}>Login / Register</button>
+          <Link to="/login">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              Login / Register
+            </button>
           </Link>
         </nav>
       </header>
 
-      <main
-        className={`${styles.hero} ${styles.container} scroll-smooth`}
-        id="home"
-      >
-        <div className={styles.heroContent}>
-          <h1>Collaborate, Code, and Conquer.</h1>
-          <h2>The ultimate code editor for developers and teams.</h2>
-          <p>
-            CodeFusion provides real-time collaboration, syntax highlighting,
-            and a seamless coding experience. Build better code together.
-          </p>
-          <div className={styles.languageLogos}>
-            <img src="/logos/javascript.png" alt="JavaScript" />
-            <img src="/logos/python.png" alt="Python" />
-            <img src="/logos/java.png" alt="Java" />
-            <img src="/logos/cpp.png" alt="C++" />
-            <img src="/logos/html.png" alt="HTML" />
-          </div>
+      {/* Hero Section */}
+      <main id="home" className="max-w-7xl mx-auto flex flex-col items-center text-center py-20 px-4">
+        <h1 className="text-4xl md:text-6xl font-bold mb-4">
+          Collaborate, Code, and Conquer.
+        </h1>
+        <h2 className="text-xl md:text-2xl text-gray-600 mb-6">
+          The ultimate code editor for developers and teams.
+        </h2>
+        <p className="max-w-2xl text-gray-700 mb-8">
+          CodeFusion provides real-time collaboration, syntax highlighting,
+          and a seamless coding experience. Build better code together.
+        </p>
+        <div className="flex flex-wrap justify-center gap-4">
+          {["javascript", "python", "java", "cpp", "html"].map((lang) => (
+            <img
+              key={lang}
+              src={`/logos/${lang}.png`}
+              alt={lang}
+              className="w-12 h-12"
+            />
+          ))}
         </div>
       </main>
 
-      <section
-  id="features"
-  className={`${styles.features} ${styles.container} scroll-smooth`}
->
-  <h1>Features</h1>
-  <div className={styles.featuresList}>
-    <div>
-      <h2>Real-Time Collaboration</h2>
-      <p>
-        Edit code simultaneously with your team and see updates in real-time. This feature makes collaboration seamless by allowing all team members to work on the same codebase without any latency issues.
-      </p>
-    
-    </div>
-    <div>
-      <h2>Syntax Highlighting</h2>
-      <p>
-        Supports multiple programming languages for a smoother coding experience. Whether you’re working with JavaScript, Python, or any other major programming language, our platform ensures your code is highlighted for better readability.
-      </p>
-    
-    </div>
-    <div>
-      <h2>Customizable Themes</h2>
-      <p>
-        Switch between light and dark themes to suit your preferences. You can toggle the theme depending on the time of day or your mood to enhance comfort while coding.
-      </p>
-   
-    </div>
-    <div>
-      <h2>Session Persistence</h2>
-      <p>
-        Rejoin your coding sessions anytime without losing progress. Our platform automatically saves your work, ensuring you can continue from where you left off, even if you disconnect.
-      </p>
-     
-    </div>
-  </div>
-</section>
+      {/* Features Section */}
+      <section id="features" className="bg-gray-50 py-20 px-4">
+        <div className="max-w-6xl mx-auto text-center">
+          <h1 className="text-4xl font-bold mb-12">Features</h1>
+          <div className="grid gap-10 md:grid-cols-2">
+            {[
+              {
+                title: "Real-Time Collaboration",
+                desc: "Edit code simultaneously with your team and see updates in real-time.",
+              },
+              {
+                title: "Syntax Highlighting",
+                desc: "Supports multiple programming languages for a smoother coding experience.",
+              },
+              {
+                title: "Customizable Themes",
+                desc: "Switch between light and dark themes to suit your preferences.",
+              },
+              {
+                title: "Session Persistence",
+                desc: "Rejoin your coding sessions anytime without losing progress.",
+              },
+            ].map((feature) => (
+              <div key={feature.title} className="bg-white shadow p-6 rounded-xl text-left">
+                <h2 className="text-xl font-semibold mb-2">{feature.title}</h2>
+                <p className="text-gray-700">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      {/* Contact Us Section */}
-      <section id="contact" className={`${styles.contactUs} ${styles.container} scroll-smooth`}>
-  <h1>Contact Us</h1>
-  <div className={styles.contactForm}>
-    <h2>Send Us a Message</h2>
-    <form>
-      <div>
-        <label htmlFor="name">Your Name</label>
-        <input type="text" id="name" name="name" placeholder="Enter your name" required />
-      </div>
-      <div>
-        <label htmlFor="email">Your Email</label>
-        <input type="email" id="email" name="email" placeholder="Enter your email" required />
-      </div>
-      <div>
-        <label htmlFor="message">Your Message</label>
-        <textarea id="message" name="message" placeholder="Type your message here." rows="4" required></textarea>
-      </div>
-      <button type="submit">Send Message</button>
-    </form>
-  </div>
-</section>
-
-
-
+      {/* Contact Section */}
+      <section id="contact" className="py-20 px-4">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-4xl font-bold text-center mb-10">Contact Us</h1>
+          <form className="space-y-6">
+            <div>
+              <label className="block font-semibold mb-1" htmlFor="name">Your Name</label>
+              <input
+                id="name"
+                type="text"
+                required
+                className="w-full border border-gray-300 rounded px-4 py-2"
+                placeholder="Enter your name"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-1" htmlFor="email">Your Email</label>
+              <input
+                id="email"
+                type="email"
+                required
+                className="w-full border border-gray-300 rounded px-4 py-2"
+                placeholder="Enter your email"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-1" htmlFor="message">Your Message</label>
+              <textarea
+                id="message"
+                rows="4"
+                required
+                className="w-full border border-gray-300 rounded px-4 py-2"
+                placeholder="Type your message here"
+              />
+            </div>
+            <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+              Send Message
+            </button>
+          </form>
+        </div>
+      </section>
 
       {/* Footer Section */}
-      <section className={`${styles.footer} ${styles.container}`}>
-        <div className={styles.footerContent}>
+      <footer className="bg-gray-100 py-10 px-4">
+        <div className="max-w-7xl mx-auto grid gap-8 md:grid-cols-4 text-sm text-gray-700">
           <div>
-            <h2>About Us</h2>
-            <p>
-              Learn more about CodeFusion and how we are revolutionizing
-              collaborative coding.
-            </p>
+            <h2 className="font-bold mb-2">About Us</h2>
+            <p>Learn more about CodeFusion and how we are revolutionizing collaborative coding.</p>
           </div>
           <div>
-            <h2>Privacy Policy</h2>
+            <h2 className="font-bold mb-2">Privacy Policy</h2>
             <p>Read about how we handle your data and privacy.</p>
           </div>
           <div>
-            <h2>Terms of Service</h2>
+            <h2 className="font-bold mb-2">Terms of Service</h2>
             <p>Understand the terms and conditions of using our platform.</p>
           </div>
+          <div>
+            <h2 className="font-bold mb-2">Follow Us</h2>
+            <div className="flex space-x-4 mt-2">
+              {["facebook", "twitter", "linkedin"].map((platform) => (
+                <a
+                  key={platform}
+                  href={`https://www.${platform}.com`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img src={`/logos/${platform}.png`} alt={platform} className="w-6 h-6" />
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className={styles.socialMedia}>
-          <h2>Follow Us</h2>
-          <a
-            href="https://www.facebook.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img src="/logos/facebook.png" alt="Facebook" />
-          </a>
-          <a
-            href="https://www.twitter.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img src="/logos/twitter.png" alt="Twitter" />
-          </a>
-          <a
-            href="https://www.linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img src="/logos/linkedin.png" alt="LinkedIn" />
-          </a>
-        </div>
-      </section>
+      </footer>
     </div>
   );
 }

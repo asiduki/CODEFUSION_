@@ -2,44 +2,49 @@ import React from "react";
 
 const OutputWindow = ({ outputDetails }) => {
   const getOutput = () => {
-    let statusId = outputDetails?.status?.id;
+    if (!outputDetails) {
+      return <p className="text-gray-400">No output yet</p>;
+    }
 
-    if (statusId === 6) {
-      // compilation error
-      return (
-        <pre className="px-2 py-1 font-normal text-xs text-red-500">
-          {atob(outputDetails?.compile_output)}
-        </pre>
-      );
-    } else if (statusId === 3) {
-      return (
-        <pre className="px-2 py-1 font-normal text-xs text-green-500">
-          {atob(outputDetails.stdout) !== null
-            ? `${atob(outputDetails.stdout)}`
-            : null}
-        </pre>
-      );
-    } else if (statusId === 5) {
-      return (
-        <pre className="px-2 py-1 font-normal text-xs text-red-500">
-          {`Time Limit Exceeded`}
-        </pre>
-      );
-    } else {
-      return (
-        <pre className="px-2 py-1 font-normal text-xs text-red-500">
-          {atob(outputDetails?.stderr)}
-        </pre>
-      );
+    try {
+      const statusId = outputDetails?.status?.id;
+
+      switch (statusId) {
+        case 3: // Success
+          const output = outputDetails.stdout ? atob(outputDetails.stdout) : "No output";
+          return <pre className="text-green-400 text-sm whitespace-pre-wrap">{output}</pre>;
+
+        case 6: // Compilation Error
+          return (
+            <pre className="text-red-400 text-sm whitespace-pre-wrap">
+              {outputDetails.compile_output ? atob(outputDetails.compile_output) : "Compilation error"}
+            </pre>
+          );
+
+        case 5: // Time Limit Exceeded
+          return <pre className="text-yellow-400 text-sm">Time Limit Exceeded</pre>;
+
+        default: // Runtime or unknown error
+          return (
+            <pre className="text-red-400 text-sm whitespace-pre-wrap">
+              {outputDetails.stderr ? atob(outputDetails.stderr) : "Unknown error"}
+            </pre>
+          );
+      }
+    } catch (err) {
+      return <pre className="text-red-500 text-sm">Error decoding output</pre>;
     }
   };
+
   return (
-    <>
-      <h1 className="font-bold text-2xl text-white flex justify-center bg-[#1e293b] border-b">Output</h1>
-      <div className="w-full h-56 bg-[#1e293b] text-white font-normal text-2xl overflow-y-auto">
-        {outputDetails ? <>{getOutput()}</> : null}
+    <div className="bg-[#1e293b] rounded-md p-4 h-full flex flex-col">
+      <h2 className="text-white text-lg font-semibold border-b border-gray-600 pb-1 mb-2">
+        Output
+      </h2>
+      <div className="flex-1 overflow-y-auto bg-[#0f172a] rounded p-2">
+        {getOutput()}
       </div>
-    </>
+    </div>
   );
 };
 

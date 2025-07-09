@@ -1,12 +1,13 @@
 {
-    "boost-test-adapter-robaho.tests": [
+  "boost-test-adapter-robaho.tests": [
+    {
+      "testExecutables": [
         {
-            "testExecutables": [
-                {
-                    "glob": "**/*{_test,_test.exe}"
-                }
-            ],
-            "debugConfig": "Test Config"
+          "glob": "**/*{_test,_test.exe}"
         }
-    ]
+      ],
+      "debugConfig": "Test Config"
+    }
+  ],
+  "cmake.sourceDirectory": "C:/Udit/CodeFusion-dev/client/node_modules/nan"
 }

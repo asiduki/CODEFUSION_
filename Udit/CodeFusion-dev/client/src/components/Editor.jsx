@@ -1,129 +1,35 @@
 import React, { useEffect, useRef, useState } from "react";
-import { language, cmtheme, data } from "../atoms";
 import { useRecoilState, useRecoilValue } from "recoil";
+import { language, cmtheme, data } from "../atoms";
 import ACTIONS from "../actions/Actions";
-import OutputWindow from "./OutputWindow"
-import axios from "axios"
-
-// CODE MIRROR
+import axios from "axios";
 import Codemirror from "codemirror";
+
 import "codemirror/lib/codemirror.css";
-
-// theme
-import "codemirror/theme/3024-day.css";
-import "codemirror/theme/3024-night.css";
-import "codemirror/theme/abbott.css";
-import "codemirror/theme/abcdef.css";
-import "codemirror/theme/ambiance.css";
 import "codemirror/theme/ayu-dark.css";
-import "codemirror/theme/ayu-mirage.css";
-import "codemirror/theme/base16-dark.css";
-import "codemirror/theme/base16-light.css";
-import "codemirror/theme/bespin.css";
-import "codemirror/theme/blackboard.css";
-import "codemirror/theme/cobalt.css";
-import "codemirror/theme/colorforth.css";
-import "codemirror/theme/darcula.css";
-import "codemirror/theme/dracula.css";
-import "codemirror/theme/duotone-dark.css";
-import "codemirror/theme/duotone-light.css";
-import "codemirror/theme/eclipse.css";
-import "codemirror/theme/elegant.css";
-import "codemirror/theme/erlang-dark.css";
-import "codemirror/theme/gruvbox-dark.css";
-import "codemirror/theme/hopscotch.css";
-import "codemirror/theme/icecoder.css";
-import "codemirror/theme/idea.css";
-import "codemirror/theme/isotope.css";
-import "codemirror/theme/juejin.css";
-import "codemirror/theme/lesser-dark.css";
-import "codemirror/theme/liquibyte.css";
-import "codemirror/theme/lucario.css";
 import "codemirror/theme/material.css";
-import "codemirror/theme/material-darker.css";
-import "codemirror/theme/material-palenight.css";
-import "codemirror/theme/material-ocean.css";
-import "codemirror/theme/mbo.css";
-import "codemirror/theme/mdn-like.css";
-import "codemirror/theme/midnight.css";
-import "codemirror/theme/monokai.css";
-import "codemirror/theme/moxer.css";
-import "codemirror/theme/neat.css";
-import "codemirror/theme/neo.css";
-import "codemirror/theme/night.css";
-import "codemirror/theme/nord.css";
-import "codemirror/theme/oceanic-next.css";
-import "codemirror/theme/panda-syntax.css";
-import "codemirror/theme/paraiso-dark.css";
-import "codemirror/theme/paraiso-light.css";
-import "codemirror/theme/pastel-on-dark.css";
-import "codemirror/theme/railscasts.css";
-import "codemirror/theme/rubyblue.css";
-import "codemirror/theme/seti.css";
-import "codemirror/theme/shadowfox.css";
-import "codemirror/theme/solarized.css";
-import "codemirror/theme/the-matrix.css";
-import "codemirror/theme/tomorrow-night-bright.css";
-import "codemirror/theme/tomorrow-night-eighties.css";
-import "codemirror/theme/ttcn.css";
-import "codemirror/theme/twilight.css";
-import "codemirror/theme/vibrant-ink.css";
-import "codemirror/theme/xq-dark.css";
-import "codemirror/theme/xq-light.css";
-import "codemirror/theme/yeti.css";
-import "codemirror/theme/yonce.css";
-import "codemirror/theme/zenburn.css";
-
-// modes
-import "codemirror/mode/clike/clike";
-import "codemirror/mode/css/css";
-import "codemirror/mode/dart/dart";
-import "codemirror/mode/django/django";
-import "codemirror/mode/dockerfile/dockerfile";
-import "codemirror/mode/go/go";
-import "codemirror/mode/htmlmixed/htmlmixed";
+import "codemirror/theme/dracula.css";
 import "codemirror/mode/javascript/javascript";
-import "codemirror/mode/jsx/jsx";
-import "codemirror/mode/markdown/markdown";
-import "codemirror/mode/php/php";
 import "codemirror/mode/python/python";
-import "codemirror/mode/r/r";
-import "codemirror/mode/rust/rust";
-import "codemirror/mode/ruby/ruby";
-import "codemirror/mode/sass/sass";
-import "codemirror/mode/shell/shell";
-import "codemirror/mode/sql/sql";
-import "codemirror/mode/swift/swift";
-import "codemirror/mode/xml/xml";
-import "codemirror/mode/yaml/yaml";
-
-// features
+import "codemirror/mode/clike/clike";
+import "codemirror/mode/htmlmixed/htmlmixed";
 import "codemirror/addon/edit/closetag";
 import "codemirror/addon/edit/closebrackets";
-import "codemirror/addon/scroll/simplescrollbars.css";
 
-//search
-import "codemirror/addon/search/search.js";
-import "codemirror/addon/search/searchcursor.js";
-import "codemirror/addon/search/jump-to-line.js";
-import "codemirror/addon/dialog/dialog.js";
-import "codemirror/addon/dialog/dialog.css";
-
-const Editor = ({ socketRef, roomId, onCodeChange }) => {
+const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
   const editorRef = useRef(null);
   const lang = useRecoilValue(language);
-  const editorTheme = useRecoilValue(cmtheme);
+  const theme = useRecoilValue(cmtheme);
   const [codeData, setCodeData] = useRecoilState(data);
-  const [processing, setProcessing] = useState(null);
-  const [outputDetails, setOutputDetails] = useState(null);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    async function init() {
+    if (!editorRef.current) {
       editorRef.current = Codemirror.fromTextArea(
         document.getElementById("realtimeEditor"),
         {
-          mode: { name: lang },
-          theme: editorTheme,
+          mode: lang.value,
+          theme: theme || "ayu-dark",
           autoCloseTags: true,
           autoCloseBrackets: true,
           lineNumbers: true,
@@ -131,11 +37,10 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
       );
 
       editorRef.current.on("change", (instance, changes) => {
-        const { origin } = changes;
         const code = instance.getValue();
         onCodeChange(code);
         setCodeData(code);
-        if (origin !== "setValue") {
+        if (changes.origin !== "setValue") {
           socketRef.current.emit(ACTIONS.CODE_CHANGE, {
             roomId,
             code,
@@ -143,85 +48,100 @@ const Editor = ({ socketRef, roomId, onCodeChange }) => {
         }
       });
     }
-    init();
-  }, [lang]);
-
-  useEffect(() => {
-    if (socketRef.current) {
-      socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
-        if (code !== null) {
-          editorRef.current.setValue(code);
-        }
-      });
-    }
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.off(ACTIONS.CODE_CHANGE);
+      if (editorRef.current) {
+        editorRef.current.toTextArea();
+        editorRef.current = null;
       }
     };
-  }, [socketRef.current]);
+  }, [lang, theme]);
 
   const handleCompile = async () => {
-  console.log("Code to compile:", codeData);
-  console.log("Type of code:", typeof codeData);
+    if (!codeData || !lang?.id) return;
 
-  if (typeof codeData !== "string" || codeData.trim() === "" || !lang?.id) {
-    console.error("Invalid code data or language");
-    return;
-  }
+    setProcessing(true);
 
-  setProcessing(true);
+    const formData = {
+      language_id: lang.id,
+      source_code: btoa(codeData),
+    };
 
-  const formData = {
-    language_id: lang.id,
-    source_code: btoa(codeData),
-  };
+    const options = {
+      method: "POST",
+      url: import.meta.env.VITE_RAPID_API_URL,
+      params: { base64_encoded: "true", fields: "*", wait: "true" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-RapidAPI-Host": import.meta.env.VITE_RAPID_API_HOST,
+        "X-RapidAPI-Key": import.meta.env.VITE_RAPID_API_KEY,
+      },
+      data: formData,
+    };
 
-  const options = {
-    method: "POST",
-    url: import.meta.env.VITE_RAPID_API_URL,
-    params: { base64_encoded: "true", fields: "*", wait: "true" },
-    headers: {
-      "Content-Type": "application/json",
-      "X-RapidAPI-Host": import.meta.env.VITE_RAPID_API_HOST,
-      "X-RapidAPI-Key": import.meta.env.VITE_RAPID_API_KEY,
-    },
-    data: formData,
-  };
-
-  try {
-    const response = await axios.request(options);
-    console.log("Execution Result", response.data);
-    setOutputDetails(response.data);
-  } catch (err) {
-    let error = err.response ? err.response.data : err;
-    let status = err.response?.status;
-    console.log("Error:", error);
-    if (status === 429) {
-      console.log("Too many requests");
+    try {
+      const response = await axios.request(options);
+      if (onOutputUpdate) onOutputUpdate(response.data);
+    } catch (err) {
+      if (onOutputUpdate)
+        onOutputUpdate({
+          status: { id: 0, description: "Error" },
+          stderr: btoa(err.message || "Unknown error"),
+        });
+    } finally {
+      setProcessing(false);
     }
-  } finally {
-    setProcessing(false);
-  }
-};
-
-
+  };
 
   return (
-    <div className="h-full w-full" >
-      <textarea id="realtimeEditor"/>
-      <button
-        onClick={handleCompile}
-        disabled={processing || !data}
-        className={`bg-green-500 text-white fixed top-5 right-5 px-2 py-1 rounded ${
-          processing || !data ? "cursor-not-allowed opacity-50" : ""
-        }`}
-      >
-        {processing ? "Processing..." : "Compile"}
-      </button>
-      <OutputWindow outputDetails={outputDetails} />
-    </div>
+    <>
+      <style>{`
+        .CodeMirror {
+          height: 100% !important;
+          font-size: 14px;
+          background-color: #0f172a;
+          color: #e2e8f0;
+          border-radius: 0.5rem;
+          padding: 0.75rem;
+        }
+      `}</style>
+
+      <div className="flex flex-col w-full h-full bg-[#0f172a] text-white">
+        <div className="flex justify-between items-center px-6 h-14 bg-[#1e293b] border-b border-gray-700">
+          <div className="flex gap-4 text-sm">
+            <span>
+              Language:
+              <span className="bg-blue-700 ml-2 px-2 py-1 rounded">
+                {lang?.label || "N/A"}
+              </span>
+            </span>
+            <span>
+              Theme:
+              <span className="bg-purple-700 ml-2 px-2 py-1 rounded">
+                {theme}
+              </span>
+            </span>
+          </div>
+          <button
+            onClick={handleCompile}
+            disabled={processing || !codeData}
+            className={`px-4 py-2 rounded-md font-semibold text-sm ${
+              processing || !codeData
+                ? "bg-green-700 opacity-50 cursor-not-allowed"
+                : "bg-green-500 hover:bg-green-600"
+            }`}
+          >
+            {processing ? "Running..." : "Compile ▶"}
+          </button>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-full p-2">
+            <textarea id="realtimeEditor" className="w-full h-full" />
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 

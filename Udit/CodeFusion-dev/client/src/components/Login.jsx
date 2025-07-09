@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
-import styles from "./Login.module.css";
 
 const Login = () => {
   const {
@@ -17,85 +16,110 @@ const Login = () => {
   const [loginError, setLoginError] = useState("");
 
   useEffect(() => {
-    console.log("The user is authenticated");
-  }, [navigate]);
+    console.log("Login component loaded");
+  }, []);
 
   const onSubmit = async (data) => {
-    console.log(data);
-
     try {
       const response = await axios.post(
         "http://localhost:5000/user/login",
         data
       );
-
       if (response.status === 200) {
         navigate(`/dashboard/${data.username}`);
       }
     } catch (error) {
-      console.log("Error while sending data", error);
+      console.error("Login failed", error);
       setLoginError("Invalid username or password.");
     }
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h2 className={styles.heading}>Login</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div>
-            <input
-              id="username"
-              type="text"
-              {...register("username", {
-                required: "Username is required",
-                pattern: {
-                  message: "Invalid Username",
-                },
-              })}
-              className={styles.input}
-              placeholder="Username"
-            />
-            {errors.username && (
-              <p className={styles.error}>{errors.username.message}</p>
-            )}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+      <div className="w-full max-w-4xl bg-white shadow-2xl rounded-lg overflow-hidden flex flex-col md:flex-row">
+        
+        {/* Left Panel - Image or Info */}
+        <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-indigo-600 to-purple-700 items-center justify-center p-10 text-white">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold mb-4">Welcome Back!</h1>
+            <p className="text-lg">
+              Collaborate, code, and conquer with CodeFusion.
+            </p>
           </div>
+        </div>
 
-          <div className={styles.inputWrapper}>
-            <input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              {...register("password", {
-                required: "Password is required",
-              })}
-              className={styles.input}
-              placeholder="Password"
-            />
+        {/* Right Panel - Form */}
+        <div className="w-full md:w-1/2 p-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6">Login</h2>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Username */}
+            <div>
+              <input
+                id="username"
+                type="text"
+                placeholder="Username"
+                {...register("username", {
+                  required: "Username is required",
+                })}
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+              {errors.username && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.username.message}
+                </p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                {...register("password", {
+                  required: "Password is required",
+                })}
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-gray-600"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            {/* Error Message */}
+            {loginError && (
+              <p className="text-red-600 font-medium text-sm">
+                {loginError}
+              </p>
+            )}
+
+            {/* Submit Button */}
             <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className={styles.toggleButton}
+              type="submit"
+              className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition duration-200"
+              disabled={isSubmitting}
             >
-              {showPassword ? <EyeOff /> : <Eye />}
+              {isSubmitting ? "Logging in..." : "Sign In"}
             </button>
-            {errors.password && (
-              <p className={styles.error}>{errors.password.message}</p>
-            )}
-          </div>
+          </form>
 
-          {loginError && <p className={styles.error}>{loginError}</p>}
-
-          <button type="submit" className={styles.button}>
-            {isSubmitting ? "Loading..." : "Sign In"}
-          </button>
-        </form>
-
-        <p className={styles.footerText}>
-          Don't have an account?{" "}
-          <Link to="/register" className={styles.link}>
-            Sign up
-          </Link>
-        </p>
+          {/* Footer */}
+          <p className="mt-6 text-sm text-gray-700">
+            Don't have an account?{" "}
+            <Link to="/register" className="text-indigo-600 hover:underline font-semibold">
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

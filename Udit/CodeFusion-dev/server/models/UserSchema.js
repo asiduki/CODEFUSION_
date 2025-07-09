@@ -8,8 +8,6 @@ const recordSchema = new mongoose.Schema({
 const UserSchema = mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  roomId: {type: String, unique: true},
-  records: [recordSchema]
 });
 
 const UserModel = mongoose.model("User", UserSchema);

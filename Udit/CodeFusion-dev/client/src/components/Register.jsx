@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
-import styles from "./Register.module.css";  // Importing the new CSS module
 
 const Register = () => {
   const {
@@ -13,75 +12,80 @@ const Register = () => {
     watch,
   } = useForm();
 
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [usernameError, setUsernameError] = useState("");
+
   const username = watch("username");
   const password = watch("password");
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    if (username) setUsernameError("");
+  }, [username]);
 
   const onSubmit = async (data) => {
-    console.log(data);
     try {
       const response = await axios.post(
         `http://localhost:5000/user/register`,
         data
       );
-
       if (response.status === 201) {
         navigate("/login");
       }
     } catch (error) {
-      console.log("Error while sending data", error);
-      if (error.response && error.response.status === 409) {
+      if (error.response?.status === 409) {
         setUsernameError("Username already exists");
+      } else {
+        console.error("Registration failed:", error);
       }
     }
   };
 
-  useEffect(() => {
-    if (username) {
-      setUsernameError("");
-    }
-  }, [username]);
-
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h2 className={styles.heading}>Create your account</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-1">
-            <label htmlFor="username" className="sr-only">
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              {...register("username", {
-                required: "Username is required",
-                validate: {
-                  lowercase: (value) =>
-                    /^[a-z0-9]+$/.test(value) ||
-                    "Username must be lowercase without spaces and special characters",
-                },
-              })}
-              className={styles.input}
-              placeholder="Username"
-            />
-            {errors.username && (
-              <p className={styles.error}>{errors.username.message}</p>
-            )}
-            {usernameError && (
-              <p className={styles.error}>{usernameError}</p>
-            )}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-blue-500 to-purple-600">
+      <div className="w-full max-w-4xl bg-white shadow-2xl rounded-lg overflow-hidden flex flex-col md:flex-row">
+        
+        {/* Left Panel */}
+        <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 items-center justify-center p-10 text-white">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-3">Join CodeFusion</h1>
+            <p className="text-lg">
+              Register to build, share, and collaborate on code effortlessly.
+            </p>
           </div>
+        </div>
 
-          <div className="space-y-1">
+        {/* Right Panel - Register Form */}
+        <div className="w-full md:w-1/2 p-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6">Create your account</h2>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Username */}
+            <div>
+              <input
+                id="username"
+                type="text"
+                {...register("username", {
+                  required: "Username is required",
+                  validate: {
+                    lowercase: (value) =>
+                      /^[a-z0-9]+$/.test(value) ||
+                      "Only lowercase letters and numbers allowed",
+                  },
+                })}
+                placeholder="Username"
+                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+              />
+              {errors.username && (
+                <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
+              )}
+              {usernameError && (
+                <p className="text-red-500 text-sm mt-1">{usernameError}</p>
+              )}
+            </div>
+
+            {/* Password */}
             <div className="relative">
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -92,31 +96,23 @@ const Register = () => {
                     message: "Password must be at least 8 characters",
                   },
                 })}
-                className={styles.input}
                 placeholder="Password"
+                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className={styles.toggleButton}
+                className="absolute right-3 top-2.5 text-gray-600"
               >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-gray-400" />
-                ) : (
-                  <Eye className="h-5 w-5 text-gray-400" />
-                )}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+              )}
             </div>
-            {errors.password && (
-              <p className={styles.error}>{errors.password.message}</p>
-            )}
-          </div>
 
-          <div className="space-y-1">
+            {/* Confirm Password */}
             <div className="relative">
-              <label htmlFor="confirmPassword" className="sr-only">
-                Confirm Password
-              </label>
               <input
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
@@ -125,42 +121,48 @@ const Register = () => {
                   validate: (value) =>
                     value === password || "Passwords do not match",
                 })}
-                className={styles.input}
                 placeholder="Confirm Password"
+                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className={styles.toggleButton}
+                className="absolute right-3 top-2.5 text-gray-600"
               >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-5 w-5 text-gray-400" />
-                ) : (
-                  <Eye className="h-5 w-5 text-gray-400" />
-                )}
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
             </div>
-            {errors.confirmPassword && (
-              <p className={styles.error}>{errors.confirmPassword.message}</p>
-            )}
-          </div>
 
-          <div>
+            {/* Submit Button */}
             <button
-              disabled={isSubmitting}
               type="submit"
-              className={`${styles.button} ${isSubmitting ? "bg-gray-600" : "bg-black"}`}
+              disabled={isSubmitting}
+              className={`w-full py-2 text-white font-semibold rounded-md transition duration-200 ${
+                isSubmitting
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
-              {isSubmitting ? "Loading" : "Submit"}
+              {isSubmitting ? "Registering..." : "Register"}
             </button>
-          </div>
-        </form>
-        <p className={styles.footerText}>
-          Already have an account?{" "}
-          <Link to="/login" className={styles.link}>
-            Sign in
-          </Link>
-        </p>
+          </form>
+
+          {/* Footer */}
+          <p className="mt-6 text-sm text-gray-700">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-blue-600 font-medium hover:underline"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
