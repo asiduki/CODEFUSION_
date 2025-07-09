@@ -111,32 +111,34 @@ const EditorPage = () => {
   };
 
   const saveCode = async () => {
-    const formData = {
-      username: location.state?.username,
-      roomId,
-      data: codeData,
-    };
-
-    console.log("📤 Sending to backend:", formData);
-
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/record/save",
-        formData,
-        {
-          withCredentials: true, // ✅ SEND COOKIE!
-        }
-      );
-
-      console.log("✅ Server response:", response.data);
-      if (response.status === 200) {
-        toast.success("Code saved.");
-      }
-    } catch (error) {
-      console.error("❌ Save failed:", error);
-      toast.error("Failed to save.");
-    }
+  const formData = {
+    username: location.state?.username,
+    roomId,
+    data: codeData,
   };
+
+  console.log("📤 Sending to backend:", formData);
+
+  try {
+    const response = await axios.post("http://localhost:5000/record/save", formData, {
+      withCredentials: true,
+    });
+
+    if (response.status === 201 || response.status === 200) {
+      toast.success("Code saved successfully.");
+    } else {
+      toast.error("Unexpected response from server.");
+    }
+  } catch (error) {
+    console.error("❌ Save failed:", error);
+    if (error.response?.status === 401) {
+      toast.error("Unauthorized. Please log in.");
+      navigate("/login"); // optional redirect
+    } else {
+      toast.error("Failed to save code.");
+    }
+  }
+};
 
   const copyRoomId = async () => {
     try {

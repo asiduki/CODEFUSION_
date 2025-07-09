@@ -1,4 +1,3 @@
-// 🧠 Editor.jsx (updated with cookie-based fetch and save)
 import React, { useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { language, cmtheme, data } from "../atoms";
@@ -24,27 +23,9 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
   const [codeData, setCodeData] = useRecoilState(data);
   const [processing, setProcessing] = useState(false);
 
-  // ✅ Fetch code from server on mount
-  const fetchSavedCode = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/record/fetch", {
-        withCredentials: true, 
-      });
-      const latest = res.data.records?.[0]?.data;
-      if (latest) {
-        editorRef.current?.setValue(latest);
-        setCodeData(latest);
-      } else {
-        console.log("No saved code found");
-      }
-    } catch (err) {
-      console.error("❌ Error fetching saved code:", err);
-    }
-  };
-
   useEffect(() => {
     if (!editorRef.current) {
-      editorRef.current = Codemirror.fromTextArea(
+      const editor = Codemirror.fromTextArea(
         document.getElementById("realtimeEditor"),
         {
           mode: lang.value,
@@ -54,34 +35,51 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
           lineNumbers: true,
         }
       );
+      editorRef.current = editor;
 
-      fetchSavedCode(); // 🔁 load saved code
+      // 💾 Fetch saved code after editor is ready
+      axios
+        .get("http://localhost:5000/record/fetch", {
+          withCredentials: true,
+        })
+        .then((res) => {
+          const latest = res.data.records?.[0]?.data;
+          if (latest) {
+            editor.setValue(latest);
+            setCodeData(latest);
+          } else {
+            console.log("No saved code found");
+          }
+        })
+        .catch((err) => {
+          console.error("❌ Error fetching saved code:", err);
+        });
 
-      editorRef.current.on("change", async (instance, changes) => {
-        const code = instance.getValue();
-        onCodeChange(code);
-        setCodeData(code);
+      // 💡 Sync code changes
+      editor.on("change", async (instance, changes) => {
+  const code = instance.getValue();
+  onCodeChange(code);
+  setCodeData(code);
 
-        // Real-time save to backend
-        try {
-          await axios.post(
-            "http://localhost:5000/record/save",
-            { roomId, data: code },
-            { withCredentials: true } // ✅ send cookies
-          );
-        } catch (err) {
-          console.error("❌ Realtime save failed:", err.message);
-        }
+  if (changes.origin !== "setValue") {
+    socketRef.current?.emit(ACTIONS.CODE_CHANGE, {
+      roomId,
+      code,
+    });
 
-        if (changes.origin !== "setValue") {
-          socketRef.current.emit(ACTIONS.CODE_CHANGE, {
-            roomId,
-            code,
-          });
-        }
-      });
+    // 🔄 Realtime save to backend (you may debounce later)
+    // try {
+    //   await axios.post(
+    //     "http://localhost:5000/record/save",
+    //     { roomId, data: code },
+    //     { withCredentials: true }
+    //   );
+    // } catch (err) {
+    //   console.warn("Realtime save failed:", err.message);
+    // }
+  }
+});
     }
-
     return () => {
       if (editorRef.current) {
         editorRef.current.toTextArea();
@@ -121,7 +119,7 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
     } catch (err) {
       const fallback = {
         status: { id: 0, description: "Error" },
-        stderr: btoa(err.message || "Unknown error"),
+        stderr: btoa(err?.response?.data?.message || err.message || "Unknown error"),
       };
       if (onOutputUpdate) onOutputUpdate(fallback);
     } finally {

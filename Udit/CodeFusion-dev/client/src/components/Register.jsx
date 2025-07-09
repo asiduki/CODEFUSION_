@@ -25,22 +25,34 @@ const Register = () => {
   }, [username]);
 
   const onSubmit = async (data) => {
-    try {
-      const response = await axios.post(
-        `http://localhost:5000/user/register`,
-        data
+  try {
+    const res = await axios.post(`http://localhost:5000/user/register`, data);
+    if (res.status === 201) {
+      // Auto login after register
+      const loginRes = await axios.post(
+        "http://localhost:5000/user/login",
+        {
+          username: data.username,
+          password: data.password,
+        },
+        {
+          withCredentials: true, // ✅ must include to receive cookie
+        }
       );
-      if (response.status === 201) {
-        navigate("/login");
-      }
-    } catch (error) {
-      if (error.response?.status === 409) {
-        setUsernameError("Username already exists");
-      } else {
-        console.error("Registration failed:", error);
+
+      if (loginRes.status === 200) {
+        navigate(`/dashboard/${data.username}`);
       }
     }
-  };
+  } catch (error) {
+    if (error.response?.status === 409) {
+      setUsernameError("Username already exists");
+    } else {
+      console.error("Registration failed:", error);
+    }
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-blue-500 to-purple-600">
