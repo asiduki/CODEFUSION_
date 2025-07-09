@@ -9,9 +9,10 @@ import recordRouter from "./routes/recordRouter.js";
 
 // ✅ Middleware
 app.use(cors({
-  origin: "http://localhost:5173", // frontend URL
-  credentials: true               // ✅ Allow cookies to be sent
+  origin: "http://localhost:5173",
+  credentials: true
 }));
+
 app.use(express.json());
 app.use(cookieParser());           // ✅ Parse cookies
 app.use(express.static("public"));

@@ -7,7 +7,12 @@ import { language, cmtheme, username, data } from "../atoms";
 import { useRecoilState, useRecoilValue } from "recoil";
 import ACTIONS from "../actions/Actions";
 import { initSocket } from "../socket";
-import { useLocation, useNavigate, Navigate, useParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  Navigate,
+  useParams,
+} from "react-router-dom";
 import { languageOptions } from "../constants/languageOptions";
 import axios from "axios";
 
@@ -42,27 +47,32 @@ const EditorPage = () => {
         username: location.state?.username,
       });
 
-      socketRef.current.on(ACTIONS.JOINED, ({ clients, username, socketId }) => {
-        if (username !== location.state?.username) {
-          toast.success(`${username} joined the room.`);
+      socketRef.current.on(
+        ACTIONS.JOINED,
+        ({ clients, username, socketId }) => {
+          if (username !== location.state?.username) {
+            toast.success(`${username} joined the room.`);
+          }
+          setClients(clients);
+          socketRef.current.emit(ACTIONS.SYNC_CODE, {
+            code: codeRef.current,
+            socketId,
+          });
         }
-        setClients(clients);
-        socketRef.current.emit(ACTIONS.SYNC_CODE, {
-          code: codeRef.current,
-          socketId,
-        });
-      });
+      );
 
       socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
         toast.success(`${username} left the room.`);
-        setClients((prev) => prev.filter((client) => client.socketId !== socketId));
+        setClients((prev) =>
+          prev.filter((client) => client.socketId !== socketId)
+        );
       });
     };
 
     const fetchSavedCode = async () => {
       try {
-        const response = await axios.post("http://localhost:5000/record/fetch", {
-          username: location.state?.username,
+        const response = await axios.get("http://localhost:5000/record/fetch", {
+          withCredentials: true, // 🔥 Must include this to send cookie
         });
 
         if (response.status === 200 && response.data.records.length > 0) {
@@ -91,7 +101,9 @@ const EditorPage = () => {
 
   const handleChangeLang = (e) => {
     const selectedLang = e.target.value;
-    const selectedLangId = languageOptions.find((l) => l.value === selectedLang)?.id;
+    const selectedLangId = languageOptions.find(
+      (l) => l.value === selectedLang
+    )?.id;
     if (selectedLangId) {
       setLang({ id: selectedLangId, value: selectedLang });
       window.location.reload();
@@ -108,7 +120,14 @@ const EditorPage = () => {
     console.log("📤 Sending to backend:", formData);
 
     try {
-      const response = await axios.post("http://localhost:5000/record/save", formData);
+      const response = await axios.post(
+        "http://localhost:5000/record/save",
+        formData,
+        {
+          withCredentials: true, // ✅ SEND COOKIE!
+        }
+      );
+
       console.log("✅ Server response:", response.data);
       if (response.status === 200) {
         toast.success("Code saved.");
@@ -156,7 +175,9 @@ const EditorPage = () => {
         </div>
 
         {/* Language Selector */}
-        <label className="text-white text-sm font-medium mb-1 block">Language:</label>
+        <label className="text-white text-sm font-medium mb-1 block">
+          Language:
+        </label>
         <select
           value={lang.value}
           onChange={handleChangeLang}
@@ -170,7 +191,9 @@ const EditorPage = () => {
         </select>
 
         {/* Theme Selector */}
-        <label className="text-white text-sm font-medium mb-1 block">Theme:</label>
+        <label className="text-white text-sm font-medium mb-1 block">
+          Theme:
+        </label>
         <select
           value={them}
           onChange={(e) => {

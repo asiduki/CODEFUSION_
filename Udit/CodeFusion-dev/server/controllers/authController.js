@@ -1,10 +1,11 @@
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import UserModel from "../models/UserSchema.js";
 
-const register = async (req, res) => {
+// ✅ Register a new user
+export const register = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log("Received registration:", username, password);
 
     if (!username || !password) {
       return res.status(400).json({ msg: "All fields are required" });
@@ -15,45 +16,58 @@ const register = async (req, res) => {
       return res.status(400).json({ msg: "User already exists" });
     }
 
-    // Hash the password before saving
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = new UserModel({ username, password: hashedPassword });
     await newUser.save();
 
     return res.status(201).json({ msg: "User registered successfully" });
   } catch (error) {
     if (error.code === 11000) {
-      // Duplicate username error (MongoDB unique index)
       return res.status(400).json({ msg: "Username already taken (duplicate)" });
     }
 
-    console.error("Error while registering:", error);
-    return res.status(500).json({ msg: "Server error while registering" });
+    console.error("Error during registration:", error);
+    return res.status(500).json({ msg: "Server error during registration" });
   }
 };
 
-const login = async (req, res) => {
+// ✅ Login existing user
+export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log(`Id: ${username} password: ${password}`);
+
+    if (!username || !password) {
+      return res.status(400).json({ msg: "All fields are required" });
+    }
 
     const user = await UserModel.findOne({ username });
     if (!user) {
       return res.status(401).json({ msg: "Username or password incorrect" });
     }
 
-    // Compare the hashed password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ msg: "Username or password incorrect" });
     }
 
-    res.status(200).json({ msg: "Login Successful" });
+    const token = jwt.sign(
+      { username: user.username },
+      process.env.JWT_SECRET || "mysecretkey",
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("token", token, {
+  httpOnly: true,
+  secure: false,        // ✅ should be false on localhost (true only for HTTPS)
+  sameSite: "None",     // ✅ required for cross-origin cookie usage
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
+
+
+
+    return res.status(200).json({ msg: "Login successful" });
   } catch (error) {
-    console.error("Error while logging in:", error);
-    return res.status(500).json({ msg: "Server error while logging in" });
+    console.error("Error during login:", error);
+    return res.status(500).json({ msg: "Server error during login" });
   }
 };
-
-export { login, register };

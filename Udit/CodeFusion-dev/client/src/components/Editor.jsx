@@ -1,3 +1,4 @@
+// 🧠 Editor.jsx (updated with cookie-based fetch and save)
 import React, { useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { language, cmtheme, data } from "../atoms";
@@ -23,64 +24,63 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
   const [codeData, setCodeData] = useRecoilState(data);
   const [processing, setProcessing] = useState(false);
 
-  const username = sessionStorage.getItem("username");
-  let saveTimeout;
+  // ✅ Fetch code from server on mount
+  const fetchSavedCode = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/record/fetch", {
+        withCredentials: true, 
+      });
+      const latest = res.data.records?.[0]?.data;
+      if (latest) {
+        editorRef.current?.setValue(latest);
+        setCodeData(latest);
+      } else {
+        console.log("No saved code found");
+      }
+    } catch (err) {
+      console.error("❌ Error fetching saved code:", err);
+    }
+  };
 
   useEffect(() => {
-    const initEditor = async () => {
-      if (!editorRef.current) {
-        editorRef.current = Codemirror.fromTextArea(
-          document.getElementById("realtimeEditor"),
-          {
-            mode: lang.value,
-            theme: theme || "ayu-dark",
-            autoCloseTags: true,
-            autoCloseBrackets: true,
-            lineNumbers: true,
-          }
-        );
+    if (!editorRef.current) {
+      editorRef.current = Codemirror.fromTextArea(
+        document.getElementById("realtimeEditor"),
+        {
+          mode: lang.value,
+          theme: theme || "ayu-dark",
+          autoCloseTags: true,
+          autoCloseBrackets: true,
+          lineNumbers: true,
+        }
+      );
 
-        // 🟡 Fetch previously saved code
+      fetchSavedCode(); // 🔁 load saved code
+
+      editorRef.current.on("change", async (instance, changes) => {
+        const code = instance.getValue();
+        onCodeChange(code);
+        setCodeData(code);
+
+        // Real-time save to backend
         try {
-          const response = await axios.get("http://localhost:5000/record/fetch", {
-            withCredentials: true,
-          });
-          const records = response.data.records || [];
-          const latest = records.find((rec) => rec.roomId === roomId);
-          if (latest?.data) {
-            editorRef.current.setValue(latest.data);
-          } else {
-            editorRef.current.setValue(codeData || "");
-          }
+          await axios.post(
+            "http://localhost:5000/record/save",
+            { roomId, data: code },
+            { withCredentials: true } // ✅ send cookies
+          );
         } catch (err) {
-          console.warn("No saved code found or fetch failed.");
-          editorRef.current.setValue(codeData || "");
+          console.error("❌ Realtime save failed:", err.message);
         }
 
-        // 🔁 Editor change event
-        editorRef.current.on("change", (instance, changes) => {
-          const code = instance.getValue();
-          onCodeChange(code);
-          setCodeData(code);
-
-          if (changes.origin !== "setValue") {
-            // socket broadcast
-            socketRef.current.emit(ACTIONS.CODE_CHANGE, {
-              roomId,
-              code,
-            });
-
-            // 🕒 debounce + auto-save
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => {
-              saveCodeRealtime(code);
-            }, 3000);
-          }
-        });
-      }
-    };
-
-    initEditor();
+        if (changes.origin !== "setValue") {
+          socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+            roomId,
+            code,
+          });
+        }
+      });
+    }
 
     return () => {
       if (editorRef.current) {
@@ -89,19 +89,6 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
       }
     };
   }, [lang, theme]);
-
-  const saveCodeRealtime = async (code) => {
-    try {
-      await axios.post(
-        "http://localhost:5000/record/save",
-        { roomId, data: code },
-        { withCredentials: true }
-      );
-      console.log("✅ Auto-saved");
-    } catch (err) {
-      console.error("❌ Auto-save failed:", err.message);
-    }
-  };
 
   const handleCompile = async () => {
     if (!codeData || !lang?.id) {
@@ -167,7 +154,9 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
             </span>
             <span>
               Theme:
-              <span className="bg-purple-700 ml-2 px-2 py-1 rounded">{theme}</span>
+              <span className="bg-purple-700 ml-2 px-2 py-1 rounded">
+                {theme}
+              </span>
             </span>
           </div>
           <button
@@ -183,7 +172,7 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
           </button>
         </div>
 
-        {/* CodeMirror Editor */}
+        {/* Editor */}
         <div className="flex-1 p-2 overflow-hidden">
           <textarea id="realtimeEditor" className="w-full h-full" />
         </div>
