@@ -10,80 +10,88 @@ function Dashboard() {
   const closeModal = () => setIsModalOpen(false);
 
   const record = [
-    // { name: "xyx", id: "b7e0a702-ae08-414b-935f-3cd3285d16ab" },
-    // { name: "xyx", id: "b7e0a702-ae08-414b-935f-3cd3285d16ab" },
-    // { name: "xyx", id: "b7e0a702-ae08-414b-935f-3cd3285d16ab" },
+    // Example:
+    // { name: "Frontend Sync", id: "a1b2c3d4e5" },
+    // { name: "Backend API", id: "f6g7h8i9j0" },
   ];
 
-  const str = "CodeFusion";
-  const alphabetArray = str.split("");
-
   return (
-    <main className="min-h-screen bg-gray-900">
-      <nav className="bg-[#121212] text-white p-4 flex justify-between items-center">
-        <div className="flex items-center justify-center cursor-pointer pb-2">
+    <main className="min-h-screen bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a] text-white">
+      {/* Navbar */}
+      <nav className="bg-[#181818] border-b border-gray-800 p-4 px-8 flex justify-between items-center shadow-md">
+        <div className="flex items-center space-x-3">
           <img
             src="/logo.png"
-            alt="CodeFusion Logo"
-            className="size-8 hover:scale-125"
+            alt="DevNest Logo"
+            className="w-10 h-10 hover:scale-110 transition"
           />
-          {alphabetArray.map((char, index) => (
-            <span className="text-4xl bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent font-bold hover:scale-125" key={index}>
-              {char}
-            </span>
-          ))}
+          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500">
+            DevNest
+          </h1>
         </div>
-        <p className="text-2xl">{username}</p>
+        <p className="text-lg font-semibold text-gray-300">
+          Logged in as: <span className="text-white">{username}</span>
+        </p>
       </nav>
 
-      <p className="text-white mx-24 m-8 text-7xl">
-        Welcome back <span className="text-blue-600">{username}</span>, happy
-        coding...
-      </p>
+      {/* Welcome Message */}
+      <section className="max-w-6xl mx-auto mt-12 px-6">
+        <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          Welcome back, <span className="text-cyan-400">{username}</span> 👋
+        </h2>
+        <p className="text-gray-400 text-lg">
+          Collaborate and build projects in real-time.
+        </p>
 
-      <div className="mx-24 my-10">
-        <button
-          onClick={openModal}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-        >
-          Create / Join
-        </button>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-8">
-          {record.map((r, index) => (
-            <button
-              key={index}
-              className="bg-gray-700 p-4 border border-gray-600 rounded-lg shadow-md hover:shadow-lg hover:bg-gray-600 active:bg-gray-500 focus:outline-none transition-all duration-300"
-            >
-              {/* Name Section */}
-              <div className="mb-4 flex gap-2 text-left">
-                <p className="font-semibold text-gray-200">Name :</p>
-                <p className="text-white">{r.name}</p>
-              </div>
-
-              {/* RoomID Section */}
-              <div className="text-left">
-                <p className="font-semibold text-gray-200">RoomID :</p>
-                <p className="text-white">{r.id}</p>
-              </div>
-            </button>
-          ))}
+        {/* Create / Join Button */}
+        <div className="mt-8">
+          <button
+            onClick={openModal}
+            className="bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white px-6 py-2 rounded-lg font-medium hover:scale-105 transition"
+          >
+            + Create / Join Room
+          </button>
         </div>
+      </section>
 
-        {isModalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={closeModal}
-                className="absolute top-2 right-3 text-2xl text-red-500 hover:text-red-600 hover:scale-110"
+      {/* Room Cards */}
+      <section className="max-w-6xl mx-auto mt-10 px-6 pb-20">
+        {record.length === 0 ? (
+          <p className="text-gray-500 mt-6 text-center">No rooms available. Start one now!</p>
+        ) : (
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-8">
+            {record.map((r, index) => (
+              <div
+                key={index}
+                className="bg-[#252525] p-6 rounded-lg shadow hover:shadow-lg border border-gray-700 transition-all"
               >
-                X
-              </button>
-              <Form />
-            </div>
+                <h3 className="text-xl font-semibold mb-2 text-white">
+                  🔧 {r.name}
+                </h3>
+                <p className="text-gray-400">
+                  <span className="font-medium text-gray-300">Room ID:</span>{" "}
+                  {r.id}
+                </p>
+              </div>
+            ))}
           </div>
         )}
-      </div>
+      </section>
+
+      {/* Modal Form */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center">
+          <div className="relative bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+            <button
+              onClick={closeModal}
+              className="absolute top-2 right-3 text-gray-700 hover:text-red-500 text-2xl font-bold"
+            >
+              ×
+            </button>
+            <Form />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

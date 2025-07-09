@@ -1,46 +1,39 @@
 import UserModel from "../models/UserSchema.js";
 
-// ✅ Save Code Record to a User
+// ✅ Save Code Record to a User (from cookie auth)
 export const saveRecord = async (req, res) => {
-  const { username, roomId, data } = req.body;
+  const { roomId, data } = req.body;
 
-  if (!username || !roomId || !data) {
-    return res.status(400).json({ message: "All fields are required" });
+  console.log("🛬 Incoming Save Request:", { user: req.user.username, roomId, data });
+
+  if (!roomId || !data) {
+    return res.status(400).json({ message: "Room ID and data are required" });
   }
 
   try {
-    const user = await UserModel.findOne({ username });
+    const user = await UserModel.findOne({ username: req.user.username });
 
     if (!user) {
+      console.log("❌ User not found:", req.user.username);
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Add record to user's records array
-    user.records.push({
-      roomId,
-      data,
-      createdAt: new Date(),
-    });
+    user.records.push({ roomId, data, createdAt: new Date() });
 
     await user.save();
 
+    console.log("✅ Code saved for", req.user.username);
     return res.status(200).json({ message: "Code saved successfully." });
   } catch (error) {
-    console.error("Error saving record:", error);
+    console.error("💥 Error saving record:", error);
     return res.status(500).json({ message: "Error saving record." });
   }
 };
 
-// ✅ Fetch All Code Records of a User
+// ✅ Fetch All Code Records of a User (from cookie auth)
 export const fetchRecord = async (req, res) => {
-  const { username } = req.body;
-
-  if (!username) {
-    return res.status(400).json({ message: "Username is required" });
-  }
-
   try {
-    const user = await UserModel.findOne({ username });
+    const user = await UserModel.findOne({ username: req.user.username });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });

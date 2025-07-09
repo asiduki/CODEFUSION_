@@ -14,7 +14,7 @@ import axios from "axios";
 const EditorPage = () => {
   const [lang, setLang] = useRecoilState(language);
   const [them, setThem] = useRecoilState(cmtheme);
-  const codeData = useRecoilValue(data);
+  const [codeData, setCodeData] = useRecoilState(data);
   const user = useRecoilValue(username);
   const [clients, setClients] = useState([]);
   const [outputDetails, setOutputDetails] = useState(null);
@@ -59,7 +59,26 @@ const EditorPage = () => {
       });
     };
 
-    init();
+    const fetchSavedCode = async () => {
+      try {
+        const response = await axios.post("http://localhost:5000/record/fetch", {
+          username: location.state?.username,
+        });
+
+        if (response.status === 200 && response.data.records.length > 0) {
+          const latestCode = response.data.records[0].data;
+          codeRef.current = latestCode;
+          setCodeData(latestCode);
+          toast.success("Loaded saved code.");
+        } else {
+          console.log("No previous code found.");
+        }
+      } catch (err) {
+        console.error("Error fetching saved code:", err);
+      }
+    };
+
+    init().then(() => fetchSavedCode());
 
     return () => {
       if (socketRef.current) {
@@ -85,12 +104,17 @@ const EditorPage = () => {
       roomId,
       data: codeData,
     };
+
+    console.log("📤 Sending to backend:", formData);
+
     try {
       const response = await axios.post("http://localhost:5000/record/save", formData);
+      console.log("✅ Server response:", response.data);
       if (response.status === 200) {
         toast.success("Code saved.");
       }
     } catch (error) {
+      console.error("❌ Save failed:", error);
       toast.error("Failed to save.");
     }
   };
@@ -99,7 +123,8 @@ const EditorPage = () => {
     try {
       await navigator.clipboard.writeText(roomId);
       toast.success("Room ID copied.");
-    } catch {
+    } catch (err) {
+      console.error("❌ Copy failed:", err);
       toast.error("Failed to copy Room ID.");
     }
   };

@@ -23,31 +23,64 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
   const [codeData, setCodeData] = useRecoilState(data);
   const [processing, setProcessing] = useState(false);
 
-  useEffect(() => {
-    if (!editorRef.current) {
-      editorRef.current = Codemirror.fromTextArea(
-        document.getElementById("realtimeEditor"),
-        {
-          mode: lang.value,
-          theme: theme || "ayu-dark",
-          autoCloseTags: true,
-          autoCloseBrackets: true,
-          lineNumbers: true,
-        }
-      );
+  const username = sessionStorage.getItem("username");
+  let saveTimeout;
 
-      editorRef.current.on("change", (instance, changes) => {
-        const code = instance.getValue();
-        onCodeChange(code);
-        setCodeData(code);
-        if (changes.origin !== "setValue") {
-          socketRef.current.emit(ACTIONS.CODE_CHANGE, {
-            roomId,
-            code,
+  useEffect(() => {
+    const initEditor = async () => {
+      if (!editorRef.current) {
+        editorRef.current = Codemirror.fromTextArea(
+          document.getElementById("realtimeEditor"),
+          {
+            mode: lang.value,
+            theme: theme || "ayu-dark",
+            autoCloseTags: true,
+            autoCloseBrackets: true,
+            lineNumbers: true,
+          }
+        );
+
+        // 🟡 Fetch previously saved code
+        try {
+          const response = await axios.get("http://localhost:5000/record/fetch", {
+            withCredentials: true,
           });
+          const records = response.data.records || [];
+          const latest = records.find((rec) => rec.roomId === roomId);
+          if (latest?.data) {
+            editorRef.current.setValue(latest.data);
+          } else {
+            editorRef.current.setValue(codeData || "");
+          }
+        } catch (err) {
+          console.warn("No saved code found or fetch failed.");
+          editorRef.current.setValue(codeData || "");
         }
-      });
-    }
+
+        // 🔁 Editor change event
+        editorRef.current.on("change", (instance, changes) => {
+          const code = instance.getValue();
+          onCodeChange(code);
+          setCodeData(code);
+
+          if (changes.origin !== "setValue") {
+            // socket broadcast
+            socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+              roomId,
+              code,
+            });
+
+            // 🕒 debounce + auto-save
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+              saveCodeRealtime(code);
+            }, 3000);
+          }
+        });
+      }
+    };
+
+    initEditor();
 
     return () => {
       if (editorRef.current) {
@@ -56,6 +89,19 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
       }
     };
   }, [lang, theme]);
+
+  const saveCodeRealtime = async (code) => {
+    try {
+      await axios.post(
+        "http://localhost:5000/record/save",
+        { roomId, data: code },
+        { withCredentials: true }
+      );
+      console.log("✅ Auto-saved");
+    } catch (err) {
+      console.error("❌ Auto-save failed:", err.message);
+    }
+  };
 
   const handleCompile = async () => {
     if (!codeData || !lang?.id) {
@@ -137,7 +183,7 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
           </button>
         </div>
 
-        {/* Editor only (no output here) */}
+        {/* CodeMirror Editor */}
         <div className="flex-1 p-2 overflow-hidden">
           <textarea id="realtimeEditor" className="w-full h-full" />
         </div>
