@@ -1,8 +1,8 @@
-# CodeFusion : Realtime Collaborative Code Editor
+# DevNest : Realtime Collaborative Code Editor
 
 ## Introduction
 
-Are you tired of sending code snippets back and forth, struggling to debug and collaborate with your team? Look no further! CodeFusion is here to revolutionize the way you code together. This powerful and intuitive collaborative code editor is designed to empower developers, and teams to work seamlessly in real-time, regardless of their location. With CodeFusion, you can code together, debug together, and ship faster, together.
+Are you tired of sending code snippets back and forth, struggling to debug and collaborate with your team? Look no further! DevNest is here to revolutionize the way you code together. This powerful and intuitive collaborative code editor is designed to empower developers, and teams to work seamlessly in real-time, regardless of their location. With DevNest, you can code together, debug together, and ship faster, together.
 
 ## Features
 
@@ -38,7 +38,6 @@ Are you tired of sending code snippets back and forth, struggling to debug and c
 4. To start the react app client run `npm run dev` in one terminal
 5. To start the server run `npm start`
 6. Go to `http://localhost:3000` to view the app
-
 
 **Note:** To stop your server, press `Ctrl+c` in the terminal.
 

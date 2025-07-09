@@ -48,7 +48,9 @@ const Login = () => {
         <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-indigo-600 to-purple-700 items-center justify-center p-10 text-white">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Welcome Back!</h1>
-            <p className="text-lg">Collaborate, code, and conquer with CodeFusion.</p>
+            <p className="text-lg">
+              Collaborate, code, and conquer with DevNest.
+            </p>
           </div>
         </div>
 
@@ -66,7 +68,9 @@ const Login = () => {
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
               {errors.username && (
-                <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.username.message}
+                </p>
               )}
             </div>
 
@@ -87,7 +91,9 @@ const Login = () => {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
@@ -108,7 +114,10 @@ const Login = () => {
 
           <p className="mt-6 text-sm text-gray-700">
             Don't have an account?{" "}
-            <Link to="/register" className="text-indigo-600 hover:underline font-semibold">
+            <Link
+              to="/register"
+              className="text-indigo-600 hover:underline font-semibold"
+            >
               Sign up
             </Link>
           </p>

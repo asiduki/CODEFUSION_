@@ -37,20 +37,19 @@ function Form() {
     }
   };
 
-  const str = "CodeFusion";
+  const str = "DevNest";
   const alphabetArray = str.split("");
 
   return (
     <div className="bg-[#1d1a19] text-white p-6 rounded-lg">
       <div className="flex items-center justify-center cursor-pointer pb-2">
-        <img
-          src="/logo.png"
-          alt="CodeFusion Logo"
-          className="size-8 hover:scale-125"
-        />
+        <img src="/logo.png" alt=" Logo" className="size-8 hover:scale-125" />
         {alphabetArray.map((char, index) => (
-          <span className="text-4xl bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent font-bold hover:scale-125" key={index}>
-            {char} 
+          <span
+            className="text-4xl bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent font-bold hover:scale-125"
+            key={index}
+          >
+            {char}
           </span>
         ))}
       </div>

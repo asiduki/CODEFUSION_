@@ -25,43 +25,41 @@ const Register = () => {
   }, [username]);
 
   const onSubmit = async (data) => {
-  try {
-    const res = await axios.post(`http://localhost:5000/user/register`, data);
-    if (res.status === 201) {
-      // Auto login after register
-      const loginRes = await axios.post(
-        "http://localhost:5000/user/login",
-        {
-          username: data.username,
-          password: data.password,
-        },
-        {
-          withCredentials: true, // ✅ must include to receive cookie
-        }
-      );
+    try {
+      const res = await axios.post(`http://localhost:5000/user/register`, data);
+      if (res.status === 201) {
+        // Auto login after register
+        const loginRes = await axios.post(
+          "http://localhost:5000/user/login",
+          {
+            username: data.username,
+            password: data.password,
+          },
+          {
+            withCredentials: true, // ✅ must include to receive cookie
+          }
+        );
 
-      if (loginRes.status === 200) {
-        navigate(`/dashboard/${data.username}`);
+        if (loginRes.status === 200) {
+          navigate(`/dashboard/${data.username}`);
+        }
+      }
+    } catch (error) {
+      if (error.response?.status === 409) {
+        setUsernameError("Username already exists");
+      } else {
+        console.error("Registration failed:", error);
       }
     }
-  } catch (error) {
-    if (error.response?.status === 409) {
-      setUsernameError("Username already exists");
-    } else {
-      console.error("Registration failed:", error);
-    }
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-blue-500 to-purple-600">
       <div className="w-full max-w-4xl bg-white shadow-2xl rounded-lg overflow-hidden flex flex-col md:flex-row">
-        
         {/* Left Panel */}
         <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 items-center justify-center p-10 text-white">
           <div className="text-center">
-            <h1 className="text-3xl font-bold mb-3">Join CodeFusion</h1>
+            <h1 className="text-3xl font-bold mb-3">Join DevNest</h1>
             <p className="text-lg">
               Register to build, share, and collaborate on code effortlessly.
             </p>
@@ -70,7 +68,9 @@ const Register = () => {
 
         {/* Right Panel - Register Form */}
         <div className="w-full md:w-1/2 p-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6">Create your account</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-6">
+            Create your account
+          </h2>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Username */}
             <div>
@@ -89,7 +89,9 @@ const Register = () => {
                 className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
               />
               {errors.username && (
-                <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.username.message}
+                </p>
               )}
               {usernameError && (
                 <p className="text-red-500 text-sm mt-1">{usernameError}</p>
@@ -119,7 +121,9 @@ const Register = () => {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 

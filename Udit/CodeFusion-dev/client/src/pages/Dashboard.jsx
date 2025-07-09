@@ -1,19 +1,35 @@
 import React, { useState } from "react";
 import Form from "../components/Form";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { username } = useParams();
+  const navigate = useNavigate();
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
   const record = [
-    // Example:
-    // { name: "Frontend Sync", id: "a1b2c3d4e5" },
-    // { name: "Backend API", id: "f6g7h8i9j0" },
+    // Your room records here
   ];
+
+  // Logout handler
+  const handleLogout = async () => {
+  try {
+    await axios.post("http://localhost:5000/user/logout", null, {
+      withCredentials: true,
+    });
+    toast.success("Logged out");
+    navigate("/login"); // or wherever you want to redirect
+  } catch (error) {
+    toast.error("Logout failed");
+    console.error("Logout error:", error);
+  }
+};
+
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a] text-white">
@@ -22,16 +38,24 @@ function Dashboard() {
         <div className="flex items-center space-x-3">
           <img
             src="/logo.png"
-            alt="DevNest Logo"
+            alt="DevNestLogo"
             className="w-10 h-10 hover:scale-110 transition"
           />
           <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500">
             DevNest
           </h1>
         </div>
-        <p className="text-lg font-semibold text-gray-300">
-          Logged in as: <span className="text-white">{username}</span>
-        </p>
+        <div className="flex items-center space-x-6">
+          <p className="text-lg font-semibold text-gray-300">
+            Logged in as: <span className="text-white">{username}</span>
+          </p>
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold transition"
+          >
+            Logout
+          </button>
+        </div>
       </nav>
 
       {/* Welcome Message */}
@@ -57,7 +81,9 @@ function Dashboard() {
       {/* Room Cards */}
       <section className="max-w-6xl mx-auto mt-10 px-6 pb-20">
         {record.length === 0 ? (
-          <p className="text-gray-500 mt-6 text-center">No rooms available. Start one now!</p>
+          <p className="text-gray-500 mt-6 text-center">
+            No rooms available. Start one now!
+          </p>
         ) : (
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-8">
             {record.map((r, index) => (
@@ -81,10 +107,10 @@ function Dashboard() {
       {/* Modal Form */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center">
-          <div className="relative bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+          <div className="relative bg-black p-8 rounded-lg shadow-lg max-w-md w-full">
             <button
               onClick={closeModal}
-              className="absolute top-2 right-3 text-gray-700 hover:text-red-500 text-2xl font-bold"
+              className="absolute top-2 right-3  text-red-500 text-2xl font-bold"
             >
               ×
             </button>

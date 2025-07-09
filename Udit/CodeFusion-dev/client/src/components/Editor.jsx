@@ -19,80 +19,80 @@ import "codemirror/addon/edit/closebrackets";
 const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
   const editorRef = useRef(null);
   const lang = useRecoilValue(language);
-  const theme = useRecoilValue(cmtheme);
+  const theme = useRecoilValue(cmtheme) || "dracula";
   const [codeData, setCodeData] = useRecoilState(data);
   const [processing, setProcessing] = useState(false);
+  const skipEmit = useRef(false);
 
   useEffect(() => {
-    if (!editorRef.current) {
-      const editor = Codemirror.fromTextArea(
-        document.getElementById("realtimeEditor"),
-        {
-          mode: lang.value,
-          theme: theme || "ayu-dark",
-          autoCloseTags: true,
-          autoCloseBrackets: true,
-          lineNumbers: true,
-        }
-      );
-      editorRef.current = editor;
+    if (editorRef.current) return;
 
-      // 💾 Fetch saved code after editor is ready
-      axios
-        .get("http://localhost:5000/record/fetch", {
-          withCredentials: true,
-        })
-        .then((res) => {
-          const latest = res.data.records?.[0]?.data;
-          if (latest) {
-            editor.setValue(latest);
-            setCodeData(latest);
-          } else {
-            console.log("No saved code found");
-          }
-        })
-        .catch((err) => {
-          console.error("❌ Error fetching saved code:", err);
-        });
+    const editorInstance = Codemirror.fromTextArea(
+      document.getElementById("realtimeEditor"),
+      {
+        mode: lang.value,
+        theme: theme,
+        autoCloseTags: true,
+        autoCloseBrackets: true,
+        lineNumbers: true,
+        smartIndent: true,
+        tabSize: 2,
+        indentWithTabs: false,
+      }
+    );
 
-      // 💡 Sync code changes
-      editor.on("change", async (instance, changes) => {
-  const code = instance.getValue();
-  onCodeChange(code);
-  setCodeData(code);
+    editorRef.current = editorInstance;
 
-  if (changes.origin !== "setValue") {
-    socketRef.current?.emit(ACTIONS.CODE_CHANGE, {
-      roomId,
-      code,
+    editorInstance.setValue(codeData || ""); // initial value
+
+    editorInstance.on("change", (cm, change) => {
+      if (skipEmit.current) {
+        skipEmit.current = false;
+        return;
+      }
+
+      const newCode = cm.getValue();
+      setCodeData(newCode);
+      onCodeChange(newCode);
+
+      socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+        roomId,
+        code: newCode,
+      });
     });
 
-    // 🔄 Realtime save to backend (you may debounce later)
-    // try {
-    //   await axios.post(
-    //     "http://localhost:5000/record/save",
-    //     { roomId, data: code },
-    //     { withCredentials: true }
-    //   );
-    // } catch (err) {
-    //   console.warn("Realtime save failed:", err.message);
-    // }
-  }
-});
-    }
+    socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
+      if (code !== editorRef.current.getValue()) {
+        skipEmit.current = true;
+        const cursor = editorRef.current.getCursor();
+        editorRef.current.setValue(code);
+        editorRef.current.setCursor(cursor);
+      }
+    });
+
     return () => {
+      socketRef.current.off(ACTIONS.CODE_CHANGE);
       if (editorRef.current) {
         editorRef.current.toTextArea();
         editorRef.current = null;
       }
     };
-  }, [lang, theme]);
+  }, []);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.setOption("mode", lang.value);
+    }
+  }, [lang]);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.setOption("theme", theme);
+    }
+  }, [theme]);
 
   const handleCompile = async () => {
-    if (!codeData || !lang?.id) {
-      console.warn("Missing code or language ID.");
-      return;
-    }
+    if (!codeData || !lang?.id) return;
 
     setProcessing(true);
 
@@ -115,13 +115,13 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
 
     try {
       const response = await axios.request(options);
-      if (onOutputUpdate) onOutputUpdate(response.data);
+      onOutputUpdate && onOutputUpdate(response.data);
     } catch (err) {
-      const fallback = {
-        status: { id: 0, description: "Error" },
-        stderr: btoa(err?.response?.data?.message || err.message || "Unknown error"),
-      };
-      if (onOutputUpdate) onOutputUpdate(fallback);
+      onOutputUpdate &&
+        onOutputUpdate({
+          status: { id: 0, description: "Error" },
+          stderr: btoa(err?.response?.data?.message || err.message),
+        });
     } finally {
       setProcessing(false);
     }

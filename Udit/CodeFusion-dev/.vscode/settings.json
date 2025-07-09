@@ -9,5 +9,5 @@
       "debugConfig": "Test Config"
     }
   ],
-  "cmake.sourceDirectory": "C:/Udit/CodeFusion-dev/client/node_modules/nan"
+  "cmake.sourceDirectory": "C:/Udit/DevNest-dev/client/node_modules/nan"
 }
