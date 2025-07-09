@@ -1,14 +1,33 @@
 import mongoose from "mongoose";
 
+// Schema for individual code records
 const recordSchema = new mongoose.Schema({
-  roomId: { type: String, required: true },
-  data: { type: String, required: true },
+  roomId: {
+    type: String,
+    required: true,
+  },
+  data: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-const UserSchema = mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+// Main User Schema
+const UserSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  records: [recordSchema], // ⬅️ Embed records here
 });
 
-const UserModel = mongoose.model("User", UserSchema);
-export default UserModel;
+export default mongoose.model("User", UserSchema);

@@ -112,86 +112,81 @@ const EditorPage = () => {
     return <Navigate to="/" />;
   }
 
-  const str = "CodeFusion";
-  const alphabetArray = str.split("");
-
   return (
     <div className="flex h-screen w-full bg-[#0f172a] text-white overflow-hidden">
       {/* Sidebar */}
-{/* Sidebar */}
-<div className="w-[18%] bg-[#0d1117] border-r border-gray-800 p-5 overflow-y-auto">
-  {/* New Minimal Header */}
-  <div className="text-center mb-6">
-    <h1 className="text-xl font-bold text-white">💻 DevPanel</h1>
-    <p className="text-sm text-gray-400">Collaborate & Code</p>
-  </div>
+      <div className="w-[18%] bg-[#0d1117] border-r border-gray-800 p-5 overflow-y-auto">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-bold text-white">💻 DevPanel</h1>
+          <p className="text-sm text-gray-400">Collaborate & Code</p>
+        </div>
 
-  {/* Connected User */}
-  <div className="mb-6 text-center">
-    <div className="mx-auto w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
-      {user?.charAt(0).toUpperCase()}
-    </div>
-    <p className="text-white font-semibold mt-2">{user}</p>
-  </div>
+        {/* Connected User */}
+        <div className="mb-6 text-center">
+          <div className="mx-auto w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+            {user?.charAt(0).toUpperCase()}
+          </div>
+          <p className="text-white font-semibold mt-2">{user}</p>
+        </div>
 
-  {/* Language Selector */}
-  <label className="text-white text-sm font-medium mb-1 block">Language:</label>
-  <select
-    value={lang.value}
-    onChange={handleChangeLang}
-    className="w-full mb-4 px-3 py-2 rounded-md text-sm bg-[#1e293b] text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-  >
-    {languageOptions.map((l, id) => (
-      <option key={id} value={l.value} className="text-black">
-        {l.label}
-      </option>
-    ))}
-  </select>
+        {/* Language Selector */}
+        <label className="text-white text-sm font-medium mb-1 block">Language:</label>
+        <select
+          value={lang.value}
+          onChange={handleChangeLang}
+          className="w-full mb-4 px-3 py-2 rounded-md text-sm bg-[#1e293b] text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {languageOptions.map((l, id) => (
+            <option key={id} value={l.value} className="text-black">
+              {l.label}
+            </option>
+          ))}
+        </select>
 
-  {/* Theme Selector */}
-  <label className="text-white text-sm font-medium mb-1 block">Theme:</label>
-  <select
-    value={them}
-    onChange={(e) => {
-      setThem(e.target.value);
-      window.location.reload();
-    }}
-    className="w-full mb-6 px-3 py-2 rounded-md text-sm bg-[#1e293b] text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-  >
-    <option value="material">material</option>
-    <option value="dracula">dracula</option>
-    <option value="ayu-dark">ayu-dark</option>
-    <option value="monokai">monokai</option>
-    <option value="nord">nord</option>
-  </select>
+        {/* Theme Selector */}
+        <label className="text-white text-sm font-medium mb-1 block">Theme:</label>
+        <select
+          value={them}
+          onChange={(e) => {
+            setThem(e.target.value);
+            window.location.reload();
+          }}
+          className="w-full mb-6 px-3 py-2 rounded-md text-sm bg-[#1e293b] text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+        >
+          <option value="material">material</option>
+          <option value="dracula">dracula</option>
+          <option value="ayu-dark">ayu-dark</option>
+          <option value="monokai">monokai</option>
+          <option value="nord">nord</option>
+        </select>
 
-  {/* Action Buttons */}
-  <div className="flex flex-col gap-3">
-    <button
-      className="bg-green-500 hover:bg-green-600 text-white py-2 rounded flex items-center justify-center gap-2 text-sm font-semibold"
-      onClick={saveCode}
-    >
-      📁 Save
-    </button>
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-3">
+          <button
+            className="bg-green-500 hover:bg-green-600 text-white py-2 rounded flex items-center justify-center gap-2 text-sm font-semibold"
+            onClick={saveCode}
+          >
+            📁 Save
+          </button>
 
-    <button
-      className="bg-blue-500 hover:bg-blue-600 text-white py-2 rounded flex items-center justify-center gap-2 text-sm font-semibold"
-      onClick={copyRoomId}
-    >
-      📋 Copy Room ID
-    </button>
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white py-2 rounded flex items-center justify-center gap-2 text-sm font-semibold"
+            onClick={copyRoomId}
+          >
+            📋 Copy Room ID
+          </button>
 
-    <button
-      className="bg-red-500 hover:bg-red-600 text-white py-2 rounded flex items-center justify-center gap-2 text-sm font-semibold"
-      onClick={leaveRoom}
-    >
-      🚪 Leave
-    </button>
-  </div>
-</div>
+          <button
+            className="bg-red-500 hover:bg-red-600 text-white py-2 rounded flex items-center justify-center gap-2 text-sm font-semibold"
+            onClick={leaveRoom}
+          >
+            🚪 Leave
+          </button>
+        </div>
+      </div>
 
-
-
+      {/* Editor + Output */}
       <div className="flex w-[82%] h-full">
         <div className="w-[65%] border-r border-gray-700">
           <Editor

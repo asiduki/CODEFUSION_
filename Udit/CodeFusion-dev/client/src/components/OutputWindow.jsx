@@ -3,7 +3,7 @@ import React from "react";
 const OutputWindow = ({ outputDetails }) => {
   const getOutput = () => {
     if (!outputDetails) {
-      return <p className="text-gray-400">No output yet</p>;
+      return <p className="text-gray-400">Output will appear here.</p>;
     }
 
     try {
@@ -11,28 +11,43 @@ const OutputWindow = ({ outputDetails }) => {
 
       switch (statusId) {
         case 3: // Success
-          const output = outputDetails.stdout ? atob(outputDetails.stdout) : "No output";
-          return <pre className="text-green-400 text-sm whitespace-pre-wrap">{output}</pre>;
+          return (
+            <pre className="text-green-400 text-sm whitespace-pre-wrap">
+              {outputDetails.stdout ? atob(outputDetails.stdout) : "No output"}
+            </pre>
+          );
 
         case 6: // Compilation Error
           return (
             <pre className="text-red-400 text-sm whitespace-pre-wrap">
-              {outputDetails.compile_output ? atob(outputDetails.compile_output) : "Compilation error"}
+              {outputDetails.compile_output
+                ? atob(outputDetails.compile_output)
+                : "Compilation error"}
             </pre>
           );
 
         case 5: // Time Limit Exceeded
-          return <pre className="text-yellow-400 text-sm">Time Limit Exceeded</pre>;
+          return (
+            <pre className="text-yellow-400 text-sm">
+              ⏱ Time Limit Exceeded
+            </pre>
+          );
 
-        default: // Runtime or unknown error
+        default: // Runtime or other error
           return (
             <pre className="text-red-400 text-sm whitespace-pre-wrap">
-              {outputDetails.stderr ? atob(outputDetails.stderr) : "Unknown error"}
+              {outputDetails.stderr
+                ? atob(outputDetails.stderr)
+                : "Unknown error"}
             </pre>
           );
       }
     } catch (err) {
-      return <pre className="text-red-500 text-sm">Error decoding output</pre>;
+      return (
+        <pre className="text-red-500 text-sm">
+          ⚠ Error decoding output.
+        </pre>
+      );
     }
   };
 

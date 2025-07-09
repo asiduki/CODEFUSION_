@@ -58,7 +58,10 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
   }, [lang, theme]);
 
   const handleCompile = async () => {
-    if (!codeData || !lang?.id) return;
+    if (!codeData || !lang?.id) {
+      console.warn("Missing code or language ID.");
+      return;
+    }
 
     setProcessing(true);
 
@@ -83,11 +86,11 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
       const response = await axios.request(options);
       if (onOutputUpdate) onOutputUpdate(response.data);
     } catch (err) {
-      if (onOutputUpdate)
-        onOutputUpdate({
-          status: { id: 0, description: "Error" },
-          stderr: btoa(err.message || "Unknown error"),
-        });
+      const fallback = {
+        status: { id: 0, description: "Error" },
+        stderr: btoa(err.message || "Unknown error"),
+      };
+      if (onOutputUpdate) onOutputUpdate(fallback);
     } finally {
       setProcessing(false);
     }
@@ -107,6 +110,7 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
       `}</style>
 
       <div className="flex flex-col w-full h-full bg-[#0f172a] text-white">
+        {/* Toolbar */}
         <div className="flex justify-between items-center px-6 h-14 bg-[#1e293b] border-b border-gray-700">
           <div className="flex gap-4 text-sm">
             <span>
@@ -117,9 +121,7 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
             </span>
             <span>
               Theme:
-              <span className="bg-purple-700 ml-2 px-2 py-1 rounded">
-                {theme}
-              </span>
+              <span className="bg-purple-700 ml-2 px-2 py-1 rounded">{theme}</span>
             </span>
           </div>
           <button
@@ -135,10 +137,9 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
           </button>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
-          <div className="w-full p-2">
-            <textarea id="realtimeEditor" className="w-full h-full" />
-          </div>
+        {/* Editor only (no output here) */}
+        <div className="flex-1 p-2 overflow-hidden">
+          <textarea id="realtimeEditor" className="w-full h-full" />
         </div>
       </div>
     </>
