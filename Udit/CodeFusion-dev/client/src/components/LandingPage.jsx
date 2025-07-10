@@ -9,7 +9,7 @@ function LandingPage() {
         <nav className="max-w-7xl mx-auto flex justify-between items-center p-5">
           <div className="flex items-center space-x-3 cursor-pointer select-none">
             <div className="bg-pink-500 rounded-full w-10 h-10 flex items-center justify-center text-white font-extrabold text-xl">
-              ASIDUKI
+              DN
             </div>
             <span className="text-2xl font-bold tracking-wide">DevNest</span>
           </div>
