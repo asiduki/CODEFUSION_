@@ -1,35 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Form from "../components/Form";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useNavigate as useHistory } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 
 function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [rooms, setRooms] = useState([]);
   const { username } = useParams();
   const navigate = useNavigate();
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const record = [
-    // Your room records here
-  ];
-
   // Logout handler
   const handleLogout = async () => {
-  try {
-    await axios.post("http://localhost:5000/user/logout", null, {
-      withCredentials: true,
-    });
-    toast.success("Logged out");
-    navigate("/login"); // or wherever you want to redirect
-  } catch (error) {
-    toast.error("Logout failed");
-    console.error("Logout error:", error);
-  }
-};
+    try {
+      await axios.post("http://localhost:5000/user/logout", null, {
+        withCredentials: true,
+      });
+      toast.success("Logged out");
+      navigate("/login");
+    } catch (error) {
+      toast.error("Logout failed");
+      console.error("Logout error:", error);
+    }
+  };
 
+  // Fetch rooms from backend
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/record/fetch-rooms", {
+          withCredentials: true,
+        });
+        setRooms(res.data);
+      } catch (err) {
+        toast.error("Failed to load rooms");
+        console.error("Room fetch error:", err);
+      }
+    };
+
+    fetchRooms();
+  }, []);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a] text-white">
@@ -80,23 +93,24 @@ function Dashboard() {
 
       {/* Room Cards */}
       <section className="max-w-6xl mx-auto mt-10 px-6 pb-20">
-        {record.length === 0 ? (
+        {rooms.length === 0 ? (
           <p className="text-gray-500 mt-6 text-center">
             No rooms available. Start one now!
           </p>
         ) : (
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-8">
-            {record.map((r, index) => (
+            {rooms.map((room) => (
               <div
-                key={index}
-                className="bg-[#252525] p-6 rounded-lg shadow hover:shadow-lg border border-gray-700 transition-all"
+                key={room.roomId}
+                onClick={() => navigate(`/editor/${room.roomId}`)}
+                className="bg-[#252525] p-6 rounded-lg shadow hover:shadow-lg border border-gray-700 transition-all cursor-pointer"
               >
                 <h3 className="text-xl font-semibold mb-2 text-white">
-                  🔧 {r.name}
+                  🔧 Room by {room.createdBy}
                 </h3>
                 <p className="text-gray-400">
                   <span className="font-medium text-gray-300">Room ID:</span>{" "}
-                  {r.id}
+                  {room.roomId}
                 </p>
               </div>
             ))}

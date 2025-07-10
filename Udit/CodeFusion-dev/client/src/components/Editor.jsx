@@ -42,8 +42,7 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
     );
 
     editorRef.current = editorInstance;
-
-    editorInstance.setValue(codeData || ""); // initial value
+    editorInstance.setValue(codeData || "");
 
     editorInstance.on("change", (cm, change) => {
       if (skipEmit.current) {
@@ -55,23 +54,29 @@ const Editor = ({ socketRef, roomId, onCodeChange, onOutputUpdate }) => {
       setCodeData(newCode);
       onCodeChange(newCode);
 
-      socketRef.current.emit(ACTIONS.CODE_CHANGE, {
-        roomId,
-        code: newCode,
-      });
-    });
-
-    socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
-      if (code !== editorRef.current.getValue()) {
-        skipEmit.current = true;
-        const cursor = editorRef.current.getCursor();
-        editorRef.current.setValue(code);
-        editorRef.current.setCursor(cursor);
+      if (socketRef?.current) {
+        socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+          roomId,
+          code: newCode,
+        });
       }
     });
 
+    if (socketRef?.current) {
+      socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
+        if (code !== editorRef.current.getValue()) {
+          skipEmit.current = true;
+          const cursor = editorRef.current.getCursor();
+          editorRef.current.setValue(code);
+          editorRef.current.setCursor(cursor);
+        }
+      });
+    }
+
     return () => {
-      socketRef.current.off(ACTIONS.CODE_CHANGE);
+      if (socketRef?.current) {
+        socketRef.current.off(ACTIONS.CODE_CHANGE);
+      }
       if (editorRef.current) {
         editorRef.current.toTextArea();
         editorRef.current = null;

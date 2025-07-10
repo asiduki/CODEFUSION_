@@ -159,21 +159,24 @@ const EditorPage = () => {
     }
   };
 
+  // ✅ FIXED: Corrected logout endpoint
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:5000/logout", {}, { withCredentials: true });
+      await axios.post("http://localhost:5000/user/logout", {}, { withCredentials: true });
       toast.success("Logged out successfully.");
       navigate("/login");
     } catch (err) {
       toast.error("Logout failed.");
+      console.error("Logout error:", err);
     }
   };
 
   const leaveRoom = async () => {
     try {
-      await axios.post("http://localhost:5000/logout", {}, { withCredentials: true });
-    } catch {}
-    navigate("/login");
+     navigate(`/dashboard/${username}`);
+    } catch (err) {
+      console.error("Leave room logout error:", err);
+    }
   };
 
   if (!location.state) return <Navigate to="/" />;
